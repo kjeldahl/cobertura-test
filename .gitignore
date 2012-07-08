@@ -1,0 +1,4 @@
+build/
+cobertura-test.jar
+cobertura.ser
+eclipse/

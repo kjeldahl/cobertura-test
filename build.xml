@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<project name="cobertura-test" basedir="." default="jar">
+    <property name="src.dir" value="src"/>
+    <property name="test.src.dir" value="test"/>
+    <property name="build.dir" value="build/classes"/>
+    <property name="test.build.dir" value="build/test-classes"/>
+    <property name="instrumented.dir" value="build/instrumentedclasses"/>
+    <property name="reports.xml.dir" value="build/reports/coverage"/>
+
+	<property name="cobertura.dir" value="../cobertura-svn" />
+
+	<path id="cobertura.classpath">
+	    <fileset dir="${cobertura.dir}">
+	        <include name="cobertura.jar" />
+	        <include name="lib/**/*.jar" />
+	    </fileset>
+	</path>
+
+	<taskdef classpathref="cobertura.classpath" resource="tasks.properties" />
+	
+    <target name="compile" depends="create">
+        <javac destdir="${build.dir}" debug="true" target="1.6">
+            <src path="${src.dir}"/>
+        </javac>
+    </target>
+
+	<target name="compile-test" depends="compile">
+        <javac destdir="${test.build.dir}" debug="true" target="1.6">
+            <src path="${test.src.dir}"/>
+        	<classpath path="${build.dir}" />
+        	<classpath path="${basedir}/lib/junit.jar" />
+        	        	
+        </javac>
+    </target>
+ 
+    <target name="jar" depends="test">
+        <jar destfile="${ant.project.name}.jar">
+            <fileset dir="${build.dir}"/>
+        </jar>
+    </target>
+ 
+ 
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+ 
+    <target name="create">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${test.build.dir}"/>
+        <mkdir dir="${reports.xml.dir}"/>
+    </target>
+	
+	<target name="instrument" depends="compile-test">
+		<delete file="${basedir}/cobertura.ser" />
+		<delete dir="${instrumented.dir}"></delete>
+			
+		<cobertura-instrument todir="${instrumented.dir}">
+		    <ignore regex="org.apache.log4j.*" />
+		    <fileset dir="${build.dir}">
+		        <include name="**/*.class" />
+		        <exclude name="**/*Test.class" />
+		    </fileset>
+		    <fileset dir="${test.build.dir}">
+		        <include name="**/*Test.class" />
+		    </fileset>
+		</cobertura-instrument>
+	</target>
+
+	<target name="test-with-instrumentation" depends="instrument, compile-test">
+		<junit fork="yes" forkmode="once" dir="${basedir}" failureProperty="test.failed">
+			<!--
+				Specify the name of the coverage data file to use.
+				The value specified below is the default.
+			-->
+			<sysproperty key="net.sourceforge.cobertura.datafile"
+				file="${basedir}/cobertura.ser" />
+
+			<!--
+				Note the classpath order: instrumented classes are before the
+				original (uninstrumented) classes.  This is important.
+			-->
+			<classpath location="lib/junit.jar"></classpath>
+			<classpath location="lib/org.hamcrest.core-1.1.0.jar"></classpath>
+			<classpath location="${instrumented.dir}" />
+			<classpath location="${build.dir}" />
+			<classpath location="${test.build.dir}" />
+
+			<!--
+				The instrumented classes reference classes used by the
+				Cobertura runtime, so Cobertura and its dependencies
+				must be on your classpath.
+			-->
+			<classpath refid="cobertura.classpath" />
+
+			<formatter type="xml" />
+			<test name="${testcase}" todir="${reports.xml.dir}" if="testcase" />
+			<batchtest todir="${reports.xml.dir}" unless="testcase">
+				<fileset dir="${test.src.dir}">
+					<include name="**/*Test.java" />
+				</fileset>
+			</batchtest>
+		</junit>	
+	</target>
+	<target name="test" depends="compile-test">
+		<junit fork="yes" forkmode="once" dir="${basedir}" failureProperty="test.failed">
+
+			<classpath location="lib/junit.jar"></classpath>
+			<classpath location="lib/org.hamcrest.core-1.1.0.jar"></classpath>
+			<classpath location="${build.dir}" />
+			<classpath location="${test.build.dir}" />
+			
+			<formatter type="xml" />
+			<test name="${testcase}" todir="${reports.xml.dir}" if="testcase" />
+			<batchtest todir="${reports.xml.dir}" unless="testcase">
+				<fileset dir="${test.build.dir}">
+					<include name="**/*Test.class" />
+				</fileset>
+			</batchtest>
+		</junit>	
+	</target>
+	
+</project>
