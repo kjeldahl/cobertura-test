@@ -5,9 +5,10 @@
     <property name="build.dir" value="build/classes"/>
     <property name="test.build.dir" value="build/test-classes"/>
     <property name="instrumented.dir" value="build/instrumentedclasses"/>
-    <property name="reports.xml.dir" value="build/reports/coverage"/>
+    <property name="reports.test.xml.dir" value="build/reports/test"/>
+    <property name="reports.coverage.html.dir" value="build/reports/coverage"/>
 
-	<property name="cobertura.dir" value="../cobertura-svn" />
+	<property name="cobertura.dir" value="../cobertura" />
 
 	<path id="cobertura.classpath">
 	    <fileset dir="${cobertura.dir}">
@@ -47,7 +48,8 @@
     <target name="create">
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${test.build.dir}"/>
-        <mkdir dir="${reports.xml.dir}"/>
+        <mkdir dir="${reports.test.xml.dir}"/>
+        <mkdir dir="${reports.coverage.html.dir}"/>
     </target>
 	
 	<target name="instrument" depends="compile-test">
@@ -93,14 +95,16 @@
 			<classpath refid="cobertura.classpath" />
 
 			<formatter type="xml" />
-			<test name="${testcase}" todir="${reports.xml.dir}" if="testcase" />
-			<batchtest todir="${reports.xml.dir}" unless="testcase">
+			<test name="${testcase}" todir="${reports.test.xml.dir}" if="testcase" />
+			<batchtest todir="${reports.test.xml.dir}" unless="testcase">
 				<fileset dir="${test.src.dir}">
 					<include name="**/*Test.java" />
 				</fileset>
 			</batchtest>
 		</junit>	
+		<cobertura-report format="html" destdir="${reports.coverage.html.dir}" srcdir="${src.dir}" />
 	</target>
+	
 	<target name="test" depends="compile-test">
 		<junit fork="yes" forkmode="once" dir="${basedir}" failureProperty="test.failed">
 

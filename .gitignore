@@ -2,3 +2,4 @@ build/
 cobertura-test.jar
 cobertura.ser
 eclipse/
+/Cobertura-test.iml
