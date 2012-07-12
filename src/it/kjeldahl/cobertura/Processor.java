@@ -19,5 +19,9 @@ public class Processor {
 	public void seedData(int i) {
 		seed = i;
 	}
+
+	public void seedDataException(int i) {
+		seed = i;
+	}
 	
 }

@@ -22,6 +22,11 @@
     <target name="compile" depends="create">
         <javac destdir="${build.dir}" debug="true" target="1.6">
             <src path="${src.dir}"/>
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar"/>
+				</fileset>
+			</classpath>
         </javac>
     </target>
 
@@ -29,7 +34,11 @@
         <javac destdir="${test.build.dir}" debug="true" target="1.6">
             <src path="${test.src.dir}"/>
         	<classpath path="${build.dir}" />
-        	<classpath path="${basedir}/lib/junit.jar" />
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar"/>
+				</fileset>
+			</classpath>
         	        	
         </javac>
     </target>
@@ -43,6 +52,7 @@
  
     <target name="clean">
         <delete dir="build"/>
+		<delete file="${basedir}/cobertura.ser" />
     </target>
  
     <target name="create">
@@ -58,6 +68,7 @@
 			
 		<cobertura-instrument todir="${instrumented.dir}">
 		    <ignore regex="org.apache.log4j.*" />
+			<testAnnotation annotation="org.junit.Test" />
 		    <fileset dir="${build.dir}">
 		        <include name="**/*.class" />
 		        <exclude name="**/*Test.class" />
@@ -81,8 +92,11 @@
 				Note the classpath order: instrumented classes are before the
 				original (uninstrumented) classes.  This is important.
 			-->
-			<classpath location="lib/junit.jar"></classpath>
-			<classpath location="lib/org.hamcrest.core-1.1.0.jar"></classpath>
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar"/>
+				</fileset>
+			</classpath>
 			<classpath location="${instrumented.dir}" />
 			<classpath location="${build.dir}" />
 			<classpath location="${test.build.dir}" />
@@ -102,20 +116,30 @@
 				</fileset>
 			</batchtest>
 		</junit>	
-		<cobertura-report format="html" destdir="${reports.coverage.html.dir}" srcdir="${src.dir}" />
+		<cobertura-report format="html" destdir="${reports.coverage.html.dir}">
+		    <fileset dir="${src.dir}">
+		        <include name="**/*.java" />
+		    </fileset>
+		    <fileset dir="${test.src.dir}">
+		        <include name="**/*.java" />
+		    </fileset>
+		</cobertura-report>
 	</target>
 	
 	<target name="test" depends="compile-test">
 		<junit fork="yes" forkmode="once" dir="${basedir}" failureProperty="test.failed">
 
-			<classpath location="lib/junit.jar"></classpath>
-			<classpath location="lib/org.hamcrest.core-1.1.0.jar"></classpath>
+			<classpath>
+				<fileset dir="lib">
+					<include name="*.jar"/>
+				</fileset>
+			</classpath>
 			<classpath location="${build.dir}" />
 			<classpath location="${test.build.dir}" />
 			
 			<formatter type="xml" />
-			<test name="${testcase}" todir="${reports.xml.dir}" if="testcase" />
-			<batchtest todir="${reports.xml.dir}" unless="testcase">
+			<test name="${testcase}" todir="${reports.test.xml.dir}" if="testcase" />
+			<batchtest todir="${reports.test.xml.dir}" unless="testcase">
 				<fileset dir="${test.build.dir}">
 					<include name="**/*Test.class" />
 				</fileset>

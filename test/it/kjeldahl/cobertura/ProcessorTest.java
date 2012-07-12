@@ -20,4 +20,13 @@ public class ProcessorTest {
 		subject.process();
 	}
 	
+	@Test
+	public void testProcessingWithException() throws Exception {
+		try {
+			subject.process();
+		} 
+		finally {
+			subject.seedDataException(23);
+		}
+	}
 }
